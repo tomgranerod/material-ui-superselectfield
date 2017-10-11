@@ -7,12 +7,13 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { findDOMNode } from 'react-dom'
 import InfiniteScroller from 'react-infinite'
-import Popover from 'material-ui/Popover/Popover'
-import TextField from 'material-ui/TextField/TextField'
-import ListItem from 'material-ui/List/ListItem'
-import CheckedIcon from 'material-ui/svg-icons/navigation/check'
-import UnCheckedIcon from 'material-ui/svg-icons/toggle/check-box-outline-blank'
-import DropDownArrow from 'material-ui/svg-icons/navigation/arrow-drop-down'
+import withTheme from 'material-ui/styles/withTheme';
+import Popover from 'material-ui/Popover'
+import TextField from 'material-ui/TextField'
+import { ListItem, ListItemIcon, ListItemText } from 'material-ui/List'
+import CheckedIcon from 'material-ui-icons/Check'
+import UnCheckedIcon from 'material-ui-icons/CheckBoxOutlineBlank'
+import DropDownArrow from 'material-ui-icons/ArrowDropDown'
 
 // ================================================================
 // =========================  Utilities  ==========================
@@ -139,11 +140,15 @@ const styles = {
 const SelectionsPresenter = ({
   selectedValues, selectionsRenderer,
   floatingLabel, hintText,
-  muiTheme, floatingLabelStyle, floatingLabelFocusStyle,
+  theme, floatingLabelStyle, floatingLabelFocusStyle,
   underlineStyle, underlineFocusStyle,
   isFocused, isOpen, disabled
 }) => {
-  const { textField: {floatingLabelColor, borderColor, focusColor} } = muiTheme
+  // TODO: static colors, should be fetched from theme
+  //const { textField: {floatingLabelColor, borderColor, focusColor} } = theme
+  const floatingLabelColor = 'rgba(0, 0, 0, 0.3)'
+  const borderColor = '#e0e0e0'
+  const focusColor = '#00bcd4'
 
   // Condition for animating floating Label color and underline
   const focusCondition = isFocused || isOpen
@@ -301,10 +306,11 @@ class SelectField extends Component {
   }
 
   focusTextField () {
-    if (this.state.showAutocomplete) {
+    // TODO: Dom node not found
+    /*if (this.state.showAutocomplete) {
       const input = findDOMNode(this.searchTextField).getElementsByTagName('input')[0]
       input.focus()
-    } else this.focusMenuItem()
+    } else this.focusMenuItem()*/
   }
 
   focusMenuItem (index) {
@@ -436,13 +442,16 @@ class SelectField extends Component {
     } = this.props
 
     // Default style depending on Material-UI context (muiTheme)
-    const { baseTheme: {palette}, menuItem } = this.context.muiTheme
+    const { palette } = this.props.theme
+    // TODO: static values fetched from previous version, should inherit from component
+    const selectedTextColor = '#ff4081';
+    const menuHoverColor = 'rgb(0, 0, 0, 0.1)';
 
     const mergedSelectedMenuItemStyle = {
-      color: menuItem.selectedTextColor, ...selectedMenuItemStyle
+      color: selectedTextColor, ...selectedMenuItemStyle
     }
     if (checkedIcon) checkedIcon.props.style.fill = mergedSelectedMenuItemStyle.color
-    const mergedHoverColor = hoverColor || menuItem.hoverColor
+    const mergedHoverColor = hoverColor || menuHoverColor
 
     /**
      * MenuItems building, based on user's children
@@ -470,20 +479,18 @@ class SelectField extends Component {
           tabIndex={index}
           ref={ref => (this.menuItems[++index] = ref)}
           onClick={this.handleMenuSelection({ value: childValue, label })}
-          disableFocusRipple
-          leftIcon={leftCheckbox}
-          rightIcon={rightCheckbox}
-          primaryText={child}
-          hoverColor={mergedHoverColor}
-          innerDivStyle={{
+          //hoverColor={mergedHoverColor}
+          /*innerDivStyle={{
             paddingTop: 10,
             paddingBottom: 10,
             paddingLeft: (multiple && checkPosition === 'left') ? 56 : 16,
             paddingRight: (multiple && checkPosition === 'right') ? 56 : 16,
             ...innerDivStyle
-          }}
+          }}*/
           style={isSelected ? mergedSelectedMenuItemStyle : {}}
-        />)]
+        >
+          {child}
+        </ListItem>)]
     }
 
     const fixedChildren = Array.isArray(children) ? children : [children]
@@ -549,7 +556,7 @@ class SelectField extends Component {
           isOpen={this.state.isOpen}
           disabled={disabled}
           hintText={hintText}
-          muiTheme={this.context.muiTheme}
+          theme={this.props.theme}
           selectedValues={this.state.selectedItems}
           selectionsRenderer={selectionsRenderer}
           floatingLabel={floatingLabel}
@@ -562,9 +569,7 @@ class SelectField extends Component {
         <Popover
           open={this.state.isOpen}
           anchorEl={this.root}
-          canAutoPosition={canAutoPosition}
           anchorOrigin={anchorOrigin}
-          useLayerForClickAway={false}
           onRequestClose={this.closeMenu}
           style={{ height: popoverHeight }}
         >
@@ -608,10 +613,6 @@ class SelectField extends Component {
       </div>
     )
   }
-}
-
-SelectField.contextTypes = {
-  muiTheme: PropTypes.object.isRequired
 }
 
 SelectField.propTypes = {
@@ -750,4 +751,4 @@ SelectField.defaultProps = {
   children: []
 }
 
-export default SelectField
+export default withTheme()(SelectField)
